@@ -25,21 +25,34 @@ struct SettingsView: View {
                     HStack {
                         Text("Model Version")
                         Spacer()
-                        Text("v0.3.0 (small)")
+                        Text(WhisperKitManager.shared.currentModel)
+                            .foregroundColor(.secondary)
+                    }
+
+                    HStack {
+                        Text("Status")
+                        Spacer()
+                        Text(WhisperKitManager.shared.downloadStatus)
                             .foregroundColor(.secondary)
                     }
 
                     Button {
-                        // TODO: Implement model update check
+                        Task {
+                            await WhisperKitManager.shared.checkModelStatus()
+                        }
                     } label: {
                         Label("Check for Updates", systemImage: "arrow.clockwise")
                     }
 
                     Button {
-                        // TODO: Implement model re-download
+                        Task {
+                            WhisperKitManager.shared.deleteModel()
+                            await WhisperKitManager.shared.downloadModel()
+                        }
                     } label: {
                         Label("Re-download Model", systemImage: "arrow.down.circle")
                     }
+                    .disabled(WhisperKitManager.shared.isDownloading)
                 }
 
                 Section("Storage") {

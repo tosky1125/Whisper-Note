@@ -323,12 +323,14 @@ if !modelExists() {
 - [x] Task 10-2: Rename functionality for recordings
 - [x] Task 10-3: Playback UI with controls
 
+#### Phase 3: WhisperKit Integration ✅
+- [x] Task 11: First Launch Model Download
+- [x] Task 12: TranscriptionService Implementation
+- [x] Task 13: Offline Handling (model check, skip if not available)
+- [x] Task 14: Model Updates (re-download in Settings)
+
 ### In Progress 🔄
-- [ ] Task 11: First Launch Model Download
+- Phase 4: Library Screen
 
 ### Pending ⏳
-- [ ] Task 11: First Launch Model Download
-- [ ] Task 12: TranscriptionService Implementation
-- [ ] Task 13: Offline Handling
-- [ ] Task 14: Model Updates
 - [ ] Task 15-30: Remaining implementation tasks

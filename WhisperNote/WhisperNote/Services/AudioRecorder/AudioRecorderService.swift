@@ -203,6 +203,11 @@ class AudioRecorderService: NSObject, ObservableObject {
 
         do {
             try fileManager.saveMetadata(metadata)
+
+            // Trigger auto-transcription if enabled
+            Task { @MainActor in
+                TranscriptionService.shared.processNewRecording(recording)
+            }
         } catch {
             print("Failed to save metadata: \(error)")
         }

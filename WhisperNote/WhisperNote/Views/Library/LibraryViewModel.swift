@@ -59,25 +59,15 @@ class LibraryViewModel: ObservableObject {
     }
 
     func transcribeRecording(_ recording: Recording) {
-        guard let index = recordings.firstIndex(where: { $0.id == recording.id }) else {
-            return
-        }
-
-        recordings[index].transcriptionStatus = .processing
-
-        // TODO: Implement actual transcription with WhisperKit
-        // For now, just update the status after a delay
         Task {
-            try? await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
-
-            await MainActor.run {
-                if let index = recordings.firstIndex(where: { $0.id == recording.id }) {
-                    recordings[index].transcriptionStatus = .completed
-                    recordings[index].transcribedAt = Date()
-
-                    // Save updated metadata
-                    let metadata = RecordingMetadata(from: recordings[index])
-                    try? fileManager.saveMetadata(metadata)
+            do {
+                _ = try await TranscriptionService.shared.transcribeRecording(recording)
+                await MainActor.run {
+                    loadRecordings() // Reload to show updated status
+                }
+            } catch {
+                await MainActor.run {
+                    errorMessage = "Transcription failed: \(error.localizedDescription)"
                 }
             }
         }
