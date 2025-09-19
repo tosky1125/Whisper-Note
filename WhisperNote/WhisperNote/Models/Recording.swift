@@ -2,12 +2,12 @@ import Foundation
 
 struct Recording: Identifiable, Codable {
     let id: UUID
-    let filename: String
+    var filename: String
     let recordedAt: Date
     let duration: TimeInterval
     let fileSize: Int64
     var transcriptionStatus: TranscriptionStatus
-    let audioPath: String
+    var audioPath: String
     var transcriptPath: String?
     let language: String
     var transcribedAt: Date?

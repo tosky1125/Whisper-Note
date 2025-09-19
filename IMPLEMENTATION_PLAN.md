@@ -82,6 +82,23 @@ Recording {
 - Audio level meter
 - Background status indicator
 
+### 10-1. ✅ AudioPlayer Service
+- Play/pause/stop functionality
+- Seek and skip controls
+- Progress tracking
+- AVAudioPlayer integration
+
+### 10-2. Rename Functionality
+- Edit recording names
+- Update metadata
+- File system sync
+
+### 10-3. Playback UI Controls
+- Play/pause button
+- Progress bar with seek
+- Skip forward/backward
+- Time display
+
 ---
 
 ## Phase 3: WhisperKit Integration (4-5 days)

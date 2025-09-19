@@ -125,6 +125,46 @@ class RecordingFileManager {
         }
     }
 
+    func renameRecording(_ recording: Recording, newName: String) throws -> Recording {
+        let oldFilename = recording.filename
+        let newFilename = newName
+
+        // Rename audio file
+        let oldAudioURL = audioURL(for: oldFilename)
+        let newAudioURL = audioURL(for: newFilename)
+        if fileManager.fileExists(atPath: oldAudioURL.path) {
+            try fileManager.moveItem(at: oldAudioURL, to: newAudioURL)
+        }
+
+        // Rename transcript file if exists
+        var newTranscriptPath: String? = nil
+        if recording.transcriptPath != nil {
+            let oldTranscriptURL = transcriptURL(for: oldFilename)
+            let newTranscriptURL = transcriptURL(for: newFilename)
+            if fileManager.fileExists(atPath: oldTranscriptURL.path) {
+                try fileManager.moveItem(at: oldTranscriptURL, to: newTranscriptURL)
+                newTranscriptPath = newTranscriptURL.path
+            }
+        }
+
+        // Create updated recording
+        var updatedRecording = recording
+        updatedRecording.filename = newFilename
+        updatedRecording.audioPath = newAudioURL.path
+        updatedRecording.transcriptPath = newTranscriptPath
+
+        // Update metadata
+        let oldMetadataURL = metadataURL(for: oldFilename)
+        if fileManager.fileExists(atPath: oldMetadataURL.path) {
+            try fileManager.removeItem(at: oldMetadataURL)
+        }
+
+        let newMetadata = RecordingMetadata(from: updatedRecording)
+        try saveMetadata(newMetadata)
+
+        return updatedRecording
+    }
+
     func saveTranscript(_ text: String, for filename: String) throws {
         let url = transcriptURL(for: filename)
         try text.write(to: url, atomically: true, encoding: .utf8)
