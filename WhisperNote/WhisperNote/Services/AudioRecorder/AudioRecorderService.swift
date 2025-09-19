@@ -5,10 +5,17 @@ import UIKit
 class AudioRecorderService: NSObject, ObservableObject {
     static let shared = AudioRecorderService()
 
-    @Published var isRecording = false
-    @Published var isPaused = false
+    @Published var recordingState: RecordingState = .idle
     @Published var recordingDuration: TimeInterval = 0
     @Published var audioLevel: Float = 0
+
+    var isRecording: Bool {
+        recordingState.isActive
+    }
+
+    var isPaused: Bool {
+        recordingState == .paused
+    }
 
     private var audioRecorder: AVAudioRecorder?
     private var timer: Timer?
@@ -41,7 +48,7 @@ class AudioRecorderService: NSObject, ObservableObject {
     }
 
     @objc private func handleAppDidEnterBackground() {
-        if isRecording {
+        if recordingState.isActive {
             startBackgroundTask()
             startBackgroundSaveTimer()
         }
@@ -99,6 +106,9 @@ class AudioRecorderService: NSObject, ObservableObject {
     }
 
     func startRecording() {
+        guard recordingState.canStartRecording else { return }
+
+        recordingState = .recording
         let audioSession = AVAudioSession.sharedInstance()
 
         do {
@@ -106,7 +116,10 @@ class AudioRecorderService: NSObject, ObservableObject {
             try audioSession.setActive(true)
 
             currentFilename = fileManager.generateFilename()
-            guard let filename = currentFilename else { return }
+            guard let filename = currentFilename else {
+                recordingState = .idle
+                return
+            }
 
             let audioURL = fileManager.audioURL(for: filename)
 
@@ -123,29 +136,30 @@ class AudioRecorderService: NSObject, ObservableObject {
             audioRecorder?.isMeteringEnabled = true
 
             if audioRecorder?.record() == true {
-                isRecording = true
-                isPaused = false
                 recordingStartTime = Date()
                 startTimer()
+            } else {
+                recordingState = .idle
             }
         } catch {
             print("Failed to start recording: \(error)")
+            recordingState = .idle
         }
     }
 
     func pauseRecording() {
-        guard isRecording, !isPaused else { return }
+        guard recordingState.canPause else { return }
 
         audioRecorder?.pause()
-        isPaused = true
+        recordingState = .paused
         timer?.invalidate()
     }
 
     func resumeRecording() {
-        guard isRecording, isPaused else { return }
+        guard recordingState.canResume else { return }
 
         audioRecorder?.record()
-        isPaused = false
+        recordingState = .recording
         startTimer()
     }
 
@@ -154,11 +168,10 @@ class AudioRecorderService: NSObject, ObservableObject {
     }
 
     private func saveAndStopRecording() {
-        guard isRecording else { return }
+        guard recordingState.isActive else { return }
 
+        recordingState = .saving
         audioRecorder?.stop()
-        isRecording = false
-        isPaused = false
         timer?.invalidate()
         cancelBackgroundSaveTimer()
         endBackgroundTask()
@@ -167,6 +180,7 @@ class AudioRecorderService: NSObject, ObservableObject {
 
         recordingDuration = 0
         audioLevel = 0
+        recordingState = .stopped
     }
 
     private func saveRecordingMetadata() {

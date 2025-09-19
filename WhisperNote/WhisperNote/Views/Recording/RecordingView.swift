@@ -14,27 +14,27 @@ struct RecordingView: View {
                 AudioLevelMeter(level: recorder.audioLevel)
                     .frame(height: 50)
                     .padding(.horizontal, 40)
-                    .opacity(recorder.isRecording ? 1 : 0.3)
+                    .opacity(recorder.recordingState.isActive ? 1 : 0.3)
 
                 // Duration display
                 Text(formatDuration(recorder.recordingDuration))
                     .font(.system(size: 48, weight: .medium, design: .monospaced))
-                    .foregroundColor(recorder.isRecording ? .primary : .secondary)
+                    .foregroundColor(recorder.recordingState.isActive ? .primary : .secondary)
 
                 Spacer()
 
                 // Recording controls
                 HStack(spacing: 60) {
                     // Pause/Resume button
-                    if recorder.isRecording {
+                    if recorder.recordingState.isActive {
                         Button(action: {
-                            if recorder.isPaused {
+                            if recorder.recordingState == .paused {
                                 recorder.resumeRecording()
                             } else {
                                 recorder.pauseRecording()
                             }
                         }) {
-                            Image(systemName: recorder.isPaused ? "play.fill" : "pause.fill")
+                            Image(systemName: recorder.recordingState == .paused ? "play.fill" : "pause.fill")
                                 .font(.system(size: 32))
                                 .foregroundColor(.white)
                                 .frame(width: 60, height: 60)
@@ -50,10 +50,10 @@ struct RecordingView: View {
                     }) {
                         ZStack {
                             Circle()
-                                .fill(recorder.isRecording ? Color.red : Color.red.opacity(0.8))
+                                .fill(recorder.recordingState.isActive ? Color.red : Color.red.opacity(0.8))
                                 .frame(width: 100, height: 100)
 
-                            if recorder.isRecording {
+                            if recorder.recordingState.isActive {
                                 RoundedRectangle(cornerRadius: 8)
                                     .fill(Color.white)
                                     .frame(width: 35, height: 35)
@@ -63,13 +63,13 @@ struct RecordingView: View {
                                     .frame(width: 35, height: 35)
                             }
                         }
-                        .shadow(radius: recorder.isRecording ? 10 : 5)
-                        .scaleEffect(recorder.isRecording ? 1.1 : 1.0)
-                        .animation(.easeInOut(duration: 0.3), value: recorder.isRecording)
+                        .shadow(radius: recorder.recordingState.isActive ? 10 : 5)
+                        .scaleEffect(recorder.recordingState.isActive ? 1.1 : 1.0)
+                        .animation(.easeInOut(duration: 0.3), value: recorder.recordingState)
                     }
 
                     // Placeholder for symmetry
-                    if recorder.isRecording {
+                    if recorder.recordingState.isActive {
                         Color.clear
                             .frame(width: 60, height: 60)
                     }
@@ -104,7 +104,7 @@ struct RecordingView: View {
     }
 
     private func handleRecordButtonTapped() {
-        if recorder.isRecording {
+        if recorder.recordingState.isActive {
             recorder.stopRecording()
         } else {
             recorder.requestMicrophonePermission { granted in
@@ -118,14 +118,15 @@ struct RecordingView: View {
     }
 
     private func getStatusText() -> String {
-        if recorder.isRecording {
-            if recorder.isPaused {
-                return "Recording Paused"
-            } else {
-                return "Recording..."
-            }
-        } else {
+        switch recorder.recordingState {
+        case .idle, .stopped:
             return "Tap to Start Recording"
+        case .recording:
+            return "Recording..."
+        case .paused:
+            return "Recording Paused"
+        case .saving:
+            return "Saving..."
         }
     }
 
