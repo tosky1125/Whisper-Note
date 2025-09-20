@@ -8,7 +8,7 @@ struct ContentView: View {
                     Label("Record", systemImage: "mic.circle.fill")
                 }
 
-            LibraryView()
+            LibraryViewEnhanced()
                 .tabItem {
                     Label("Library", systemImage: "folder.fill")
                 }
@@ -21,23 +21,8 @@ struct ContentView: View {
     }
 }
 
-struct RecordingView: View {
-    var body: some View {
-        Text("Recording View")
-    }
-}
 
-struct LibraryView: View {
-    var body: some View {
-        Text("Library View")
-    }
-}
 
-struct SettingsView: View {
-    var body: some View {
-        Text("Settings View")
-    }
-}
 
 #Preview {
     ContentView()

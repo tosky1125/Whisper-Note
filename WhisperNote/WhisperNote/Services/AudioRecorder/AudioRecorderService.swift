@@ -123,12 +123,16 @@ class AudioRecorderService: NSObject, ObservableObject {
 
             let audioURL = fileManager.audioURL(for: filename)
 
+            // Get audio quality settings from UserDefaults
+            let audioQuality = UserDefaults.standard.string(forKey: "audioQuality") ?? "medium"
+            let (sampleRate, bitRate, quality) = getAudioSettings(for: audioQuality)
+
             let settings: [String: Any] = [
                 AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
-                AVSampleRateKey: 22050,
+                AVSampleRateKey: sampleRate,
                 AVNumberOfChannelsKey: 1,
-                AVEncoderBitRateKey: 64000,
-                AVEncoderAudioQualityKey: AVAudioQuality.medium.rawValue
+                AVEncoderBitRateKey: bitRate,
+                AVEncoderAudioQualityKey: quality.rawValue
             ]
 
             audioRecorder = try AVAudioRecorder(url: audioURL, settings: settings)
@@ -250,6 +254,19 @@ extension AudioRecorderService: AVAudioRecorderDelegate {
     func audioRecorderEncodeErrorDidOccur(_ recorder: AVAudioRecorder, error: Error?) {
         if let error = error {
             print("Recording error: \(error)")
+        }
+    }
+}
+
+extension AudioRecorderService {
+    private func getAudioSettings(for quality: String) -> (Int, Int, AVAudioQuality) {
+        switch quality {
+        case "low":
+            return (16000, 32000, .low)
+        case "high":
+            return (44100, 128000, .high)
+        default: // medium
+            return (22050, 64000, .medium)
         }
     }
 }

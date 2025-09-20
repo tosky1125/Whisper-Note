@@ -329,8 +329,32 @@ if !modelExists() {
 - [x] Task 13: Offline Handling (model check, skip if not available)
 - [x] Task 14: Model Updates (re-download in Settings)
 
+#### Phase 4: Library Screen ✅
+- [x] Task 15: LibraryViewModel (load, filter, sort)
+- [x] Task 16: LibraryView UI with recording list display
+- [x] Task 17: Swipe actions (share, delete with confirmation)
+- [x] Task 18: Batch processing for multiple recordings
+
+#### Phase 5: Sharing Feature ✅
+- [x] Task 19: File Export (audio m4a, text txt, both)
+- [x] Task 20: iOS Share Sheet Integration
+
+#### Phase 6: Settings Screen ✅
+- [x] Task 21: Basic Settings (auto-transcription, quality, language)
+- [x] Task 22: WhisperKit Model Management (version, updates, re-download)
+- [x] Task 23: Storage Management (usage, cleanup old files)
+- [x] Task 24: Backup Settings (iCloud toggle - placeholder)
+
+#### Additional Features Implemented ✅
+- [x] Search functionality for recordings
+- [x] Filter by transcription status
+- [x] Transcript viewer and editor
+- [x] Audio quality settings (low/medium/high)
+- [x] Storage cleanup with age-based deletion
+
 ### In Progress 🔄
-- Phase 4: Library Screen
+- None - All core features implemented
 
 ### Pending ⏳
-- [ ] Task 15-30: Remaining implementation tasks
+- Phase 7: Stability & Optimization
+- Phase 8: Testing & Release

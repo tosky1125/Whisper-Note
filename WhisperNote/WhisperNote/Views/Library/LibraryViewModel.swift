@@ -10,8 +10,13 @@ enum SortOption {
 @MainActor
 class LibraryViewModel: ObservableObject {
     @Published var recordings: [Recording] = []
+    @Published var filteredRecordings: [Recording] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
+    @Published var searchText = ""
+    @Published var filterStatus: TranscriptionStatus?
+    @Published var selectedRecordings = Set<UUID>()
+    @Published var isSelectionMode = false
 
     private let fileManager = RecordingFileManager.shared
     private var sortOption: SortOption = .date
@@ -23,6 +28,7 @@ class LibraryViewModel: ObservableObject {
     func loadRecordings() {
         recordings = fileManager.loadAllRecordings()
         sortRecordings()
+        applyFilters()
     }
 
     func refreshRecordings() async {
@@ -47,6 +53,86 @@ class LibraryViewModel: ObservableObject {
         case .size:
             recordings.sort { $0.fileSize > $1.fileSize }
         }
+    }
+
+    func applyFilters() {
+        var results = recordings
+
+        // Filter by search text
+        if !searchText.isEmpty {
+            results = results.filter { recording in
+                recording.filename.localizedCaseInsensitiveContains(searchText)
+            }
+        }
+
+        // Filter by status
+        if let status = filterStatus {
+            results = results.filter { $0.transcriptionStatus == status }
+        }
+
+        filteredRecordings = results
+    }
+
+    func updateSearchText(_ text: String) {
+        searchText = text
+        applyFilters()
+    }
+
+    func updateFilterStatus(_ status: TranscriptionStatus?) {
+        filterStatus = status
+        applyFilters()
+    }
+
+    func toggleSelectionMode() {
+        isSelectionMode.toggle()
+        if !isSelectionMode {
+            selectedRecordings.removeAll()
+        }
+    }
+
+    func toggleSelection(for recording: Recording) {
+        if selectedRecordings.contains(recording.id) {
+            selectedRecordings.remove(recording.id)
+        } else {
+            selectedRecordings.insert(recording.id)
+        }
+    }
+
+    func selectAll() {
+        selectedRecordings = Set(filteredRecordings.map { $0.id })
+    }
+
+    func deselectAll() {
+        selectedRecordings.removeAll()
+    }
+
+    // Batch operations
+    func deleteSelectedRecordings() {
+        let toDelete = filteredRecordings.filter { selectedRecordings.contains($0.id) }
+
+        for recording in toDelete {
+            do {
+                try fileManager.deleteRecording(recording)
+                recordings.removeAll { $0.id == recording.id }
+            } catch {
+                errorMessage = "Failed to delete some recordings"
+            }
+        }
+
+        selectedRecordings.removeAll()
+        isSelectionMode = false
+        applyFilters()
+    }
+
+    func transcribeSelectedRecordings() {
+        let toTranscribe = filteredRecordings.filter {
+            selectedRecordings.contains($0.id) && $0.transcriptionStatus == .pending
+        }
+
+        TranscriptionService.shared.batchTranscribe(recordings: toTranscribe)
+
+        selectedRecordings.removeAll()
+        isSelectionMode = false
     }
 
     func deleteRecording(_ recording: Recording) {

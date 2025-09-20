@@ -5,6 +5,7 @@ struct SettingsView: View {
     @AppStorage("audioQuality") private var audioQuality = "medium"
     @State private var showingAbout = false
     @State private var storageUsed: String = "Calculating..."
+    @State private var showingCleanup = false
 
     private let fileManager = RecordingFileManager.shared
 
@@ -64,7 +65,7 @@ struct SettingsView: View {
                     }
 
                     Button {
-                        // TODO: Implement cleanup
+                        showingCleanup = true
                     } label: {
                         Label("Clean Old Files", systemImage: "trash")
                             .foregroundColor(.red)
@@ -110,6 +111,9 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showingAbout) {
             AboutView()
+        }
+        .sheet(isPresented: $showingCleanup) {
+            StorageCleanupView(storageUsed: $storageUsed)
         }
     }
 

@@ -187,4 +187,13 @@ class RecordingFileManager {
         let asset = AVAsset(url: url)
         return CMTimeGetSeconds(asset.duration)
     }
+
+    func getAudioDuration(at path: String) -> TimeInterval {
+        let url = URL(fileURLWithPath: path)
+        return getAudioDuration(at: url)
+    }
+
+    func listRecordings() -> [Recording] {
+        return loadAllRecordings()
+    }
 }

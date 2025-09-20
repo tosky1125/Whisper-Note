@@ -9,6 +9,7 @@ struct RecordingDetailView: View {
     @State private var newName = ""
     @State private var showError = false
     @State private var errorMessage = ""
+    @State private var showTranscript = false
 
     private let fileManager = RecordingFileManager.shared
 
@@ -159,16 +160,33 @@ struct RecordingDetailView: View {
                     }
                     .padding()
 
-                    // Share button
-                    Button {
-                        shareRecording()
-                    } label: {
-                        Label("Share Recording", systemImage: "square.and.arrow.up")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
+                    // Action buttons
+                    HStack(spacing: 12) {
+                        // View Transcript button (if available)
+                        if recording.transcriptionStatus == .completed {
+                            Button {
+                                showTranscript = true
+                            } label: {
+                                Label("Transcript", systemImage: "doc.text")
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(Color.green)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(10)
+                            }
+                        }
+
+                        // Share button
+                        Button {
+                            shareRecording()
+                        } label: {
+                            Label("Share", systemImage: "square.and.arrow.up")
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.blue)
+                                .foregroundColor(.white)
+                                .cornerRadius(10)
+                        }
                     }
                     .padding(.horizontal)
                 }
@@ -196,6 +214,9 @@ struct RecordingDetailView: View {
             if player.currentRecording?.id == recording.id {
                 player.stop()
             }
+        }
+        .sheet(isPresented: $showTranscript) {
+            TranscriptView(recording: $recording)
         }
     }
 
